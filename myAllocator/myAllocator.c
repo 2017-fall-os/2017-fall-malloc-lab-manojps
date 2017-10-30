@@ -266,7 +266,7 @@ void *resizeRegion(void *r, size_t newSize) {
     oldSize = 0;		/* non-existant regions have size 0 */
   if (oldSize >= newSize){	/* old region is big enough */
     return r;
-  } else if (next && !next->allocated && (computeUsableSpace(next)+oldSize >= newSize)) {
+  } else if (next && !next->allocated && (computeUsableSpace(next)+oldSize >= newSize)) { /* coalesce with next region if exists, empty and has sufficient space */
       BlockPrefix_t *oldPrefix = regionToPrefix(r);
       oldPrefix->allocated = 0;
       BlockPrefix_t *newPrefix = coalescePrev(next);
