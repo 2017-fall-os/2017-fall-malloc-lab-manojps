@@ -5,7 +5,7 @@
 #include "myAllocator.h"
 
 /*
-  This is a simple endogenous first-fit allocator.  
+  This is a simple endogenous first-fit allocator.
 
   Each allocated memory region is sandwiched between a "BlockPrefix"
   and a "BlockSuffix".  All block info is stored in its BlockPrefix.
@@ -18,12 +18,12 @@
   Such a block can be marked as allcated by setting its "allocated"
   field.  The usable space between a block's prefix &
   suffix (extent - (prefixSize+suffixSize) is computed by
-  usableSpace().  
+  usableSpace().
 
   All blocks are allocated from an arena extending from arenaBegin to
   arenaEnd.  In particular, the first block's prefix is at address
   arenaBegin, and the last block's suffix is at address
-  arenaEnd-suffixSize. 
+  arenaEnd-suffixSize.
 
   This allocator generally refers to a block by the address of its
   prefix.  The address of the prefix to block b's successor is the
@@ -34,7 +34,7 @@
 
   The method findFirstFit() searches the arena for a sufficiently
   large free block.  Adjacent free blocks can be coalesced:  See
-  coalescePrev(),   coalesce().  
+  coalescePrev(),   coalesce().
 
   Functions regionToBlock() and blockToRegion() convert between
   prefixes & the first available address within the block.
@@ -53,10 +53,10 @@
 #define suffixSize align8(sizeof(BlockSuffix_t))
 
 /* how much memory to ask for */
-const size_t DEFAULT_BRKSIZE = 0x100000;	/* 1M */
+const size_t DEFAULT_BRKSIZE = 0x200000;	/* 2M */
 
 /* create a block, mark it as free */
-BlockPrefix_t *makeFreeBlock(void *addr, size_t size) { 
+BlockPrefix_t *makeFreeBlock(void *addr, size_t size) {
   BlockPrefix_t *p = addr;
   void *limitAddr = addr + size;
   BlockSuffix_t *s = limitAddr - align8(sizeof(BlockSuffix_t));
@@ -72,7 +72,7 @@ void *arenaEnd = 0;
 
 void initializeArena() {
     if (arenaBegin != 0)	/* only initialize once */
-	return; 
+	return;
     arenaBegin = makeFreeBlock(sbrk(DEFAULT_BRKSIZE), DEFAULT_BRKSIZE);
     arenaEnd = ((void *)arenaBegin) + DEFAULT_BRKSIZE;
 }
@@ -82,7 +82,7 @@ size_t computeUsableSpace(BlockPrefix_t *p) { /* useful space within a block */
     return ((void *)(p->suffix)) - (prefix_end);
 }
 
-BlockPrefix_t *computeNextPrefixAddr(BlockPrefix_t *p) { 
+BlockPrefix_t *computeNextPrefixAddr(BlockPrefix_t *p) {
     return ((void *)(p->suffix)) + suffixSize;
 }
 
@@ -113,15 +113,19 @@ BlockPrefix_t *coalescePrev(BlockPrefix_t *p) {	/* coalesce p with prev, return 
 	return prev;
     }
     return p;
-}    
+}
 
+
+/* void coalesceNext(BlockPrefix_t *p) {
+  BlockPrefix_t *next = getNextPrefix(p);
+} */
 
 void coalesce(BlockPrefix_t *p) {	/* coalesce p with prev & next */
     if (p != (void *)0) {
         BlockPrefix_t *next;
 	p = coalescePrev(p);
 	next = getNextPrefix(p);
-	if (next) 
+	if (next)
 	    coalescePrev(next);
     }
 }
@@ -230,7 +234,7 @@ void *firstFitAllocRegion(size_t s) {
   } else {			/* failed */
     return (void *)0;
   }
-  
+
 }
 
 void freeRegion(void *r) {
@@ -253,20 +257,28 @@ void freeRegion(void *r) {
 */
 void *resizeRegion(void *r, size_t newSize) {
   int oldSize;
-  if (r != (void *)0)		/* old region existed */
+  BlockPrefix_t *next;
+
+  if (r != (void *)0)	{	/* old region existed */
     oldSize = computeUsableSpace(regionToPrefix(r));
-  else
+    next = getNextPrefix(r);
+  } else
     oldSize = 0;		/* non-existant regions have size 0 */
-  if (oldSize >= newSize)	/* old region is big enough */
+  if (oldSize >= newSize){	/* old region is big enough */
     return r;
-  else {			/* allocate new region & copy old data */
-    char *o = (char *)r;	/* treat both regions as char* */
-    char *n = (char *)firstFitAllocRegion(newSize); 
-    int i;
-    for (i = 0; i < oldSize; i++) /* copy byte-by-byte, should use memcpy */
-      n[i] = o[i];
-    freeRegion(o);		/* free old region */
-    return (void *)n;
+  } else if (next && !next->allocated && (computeUsableSpace(next)+oldSize >= newSize)) {
+      BlockPrefix_t *oldPrefix = regionToPrefix(r);
+      oldPrefix->allocated = 0;
+      BlockPrefix_t *newPrefix = coalescePrev(next);
+      newPrefix->allocated = 1;
+      return newPrefix;
+  } else {			/* allocate new region & copy old data */
+      char *o = (char *)r;	/* treat both regions as char* */
+      char *n = (char *)firstFitAllocRegion(newSize);
+      int i;
+      for (i = 0; i < oldSize; i++) /* copy byte-by-byte, should use memcpy */
+        n[i] = o[i];
+        freeRegion(o);		/* free old region */
+        return (void *)n;
   }
 }
-
