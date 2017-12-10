@@ -21,35 +21,32 @@ void getutime(struct timeval *t)
 
 int main() 
 {
-  void *p1, *p2, *p3;
-  arenaCheck();
-  p1 = malloc(254);
-  arenaCheck();
-  p2 = malloc(25400);
-  arenaCheck();
-  p3 = malloc(254);
-  printf("%8zx %8zx %8zx\n", p1, p2, p3);
-  arenaCheck();
-  free(p2);
-  arenaCheck();
-  free(p3);
-  arenaCheck();
-  free(p1);
-  arenaCheck();
-  
-  /* Allocate three regions again to test resizeRegion() */
-  p1 = firstFitAllocRegion(200);
-  p2 = firstFitAllocRegion(500);
-  p3 = firstFitAllocRegion(400);
-  arenaCheck();
-  freeRegion(p2); /* free the block in the middle */
-  arenaCheck();
-  p1 = resizeRegion(p1, 600); /* resize the first allocated block */
+  void *p1, *p2, *p3, *p4, *p5, *p6, *p7;
   arenaCheck();
 
-  freeRegion(p1);
-  freeRegion(p3);
+  /* Allocate five regions to test best-fit */
+  p1 = bestFitAllocRegion(200);
+  p2 = bestFitAllocRegion(700);
+  p3 = bestFitAllocRegion(400);
+  p4 = bestFitAllocRegion(600);
+  p5 = bestFitAllocRegion(800);
+  p6 = bestFitAllocRegion(900);
+  p7 = bestFitAllocRegion(1000);
   arenaCheck();
+  
+  /* free some blocks */
+  freeRegion(p2);
+  freeRegion(p4);
+  freeRegion(p6);
+  arenaCheck();
+  bestFitAllocRegion(500); /* allocating region using best-fit */
+  arenaCheck();
+  
+  freeRegion(p1);
+  freeRegion(p2);
+  freeRegion(p3);
+  freeRegion(p4);
+  freeRegion(p5);
   
   {				/* measure time for 10000 mallocs */
     struct timeval t1, t2;
