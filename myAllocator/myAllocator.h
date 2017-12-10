@@ -17,5 +17,5 @@ void freeRegion(void *r);
 void *resizeRegion(void *r, size_t newSize);
 size_t computeUsableSpace(BlockPrefix_t *p);
 BlockPrefix_t *regionToPrefix(void *r);
-
+BlockPrefix_t *makeFreeBlock(void *addr, size_t size);
 #endif // myAllocator_H

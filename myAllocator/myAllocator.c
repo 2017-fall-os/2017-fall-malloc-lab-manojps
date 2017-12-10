@@ -257,21 +257,31 @@ void freeRegion(void *r) {
 */
 void *resizeRegion(void *r, size_t newSize) {
   int oldSize;
-  BlockPrefix_t *next;
+  BlockPrefix_t *nextPrefix;
+  size_t availableSpace;
 
   if (r != (void *)0)	{	/* old region existed */
     oldSize = computeUsableSpace(regionToPrefix(r));
-    next = getNextPrefix(r);
+    nextPrefix = getNextPrefix(regionToPrefix(r)); /* get prefix for next block */
+    if(nextPrefix) availableSpace = computeUsableSpace(nextPrefix)+prefixSize+suffixSize; /* compute size of next block (including prefix and suffix) */
   } else
     oldSize = 0;		/* non-existant regions have size 0 */
+    
   if (oldSize >= newSize){	/* old region is big enough */
     return r;
-  } else if (next && !next->allocated && (computeUsableSpace(next)+oldSize >= newSize)) { /* coalesce with next region if exists, empty and has sufficient space */
-      BlockPrefix_t *oldPrefix = regionToPrefix(r);
-      oldPrefix->allocated = 0;
-      BlockPrefix_t *newPrefix = coalescePrev(next);
-      newPrefix->allocated = 1;
-      return newPrefix;
+
+  } else if (oldSize+availableSpace >= newSize && !nextPrefix->allocated) { /* if combined size of r and next block is bigger than requested size, and if next block is not allocated then coalesce the two blocks */
+      void *s = prefixToRegion(getNextPrefix(regionToPrefix(r))); /* get prefix for successor region*/
+      
+      /* coalesce r and s */
+      BlockPrefix_t *newPrefix = regionToPrefix(r); /* get prefix for new coalesced region */
+      BlockSuffix_t *newSuffix = regionToPrefix(s)->suffix; /* get suffix for new coalesced region */
+      
+      newPrefix->suffix = newSuffix; /* assign new suffix */
+      newSuffix->prefix = newPrefix; /* assign new prefix */
+
+      return r;
+      
   } else {			/* allocate new region & copy old data */
       char *o = (char *)r;	/* treat both regions as char* */
       char *n = (char *)firstFitAllocRegion(newSize);
