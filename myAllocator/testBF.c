@@ -1,3 +1,9 @@
+/* This test program for best-fit allocator allocates seven regions, 
+ * then deallocates three "even numbered" regions, then requests to 
+ * allocate memory such that the best-fit would be the second even 
+ * numbered region.
+ */
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "myAllocator.h"

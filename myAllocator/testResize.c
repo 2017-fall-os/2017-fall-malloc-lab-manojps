@@ -1,3 +1,9 @@
+/* The test programs for resizeRegion() allocates three 
+ * regions first, then free the region in the middle using 
+ * freeRegion() and resize the first region with the 
+ * deallocated region next to it.
+ */
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "myAllocator.h"

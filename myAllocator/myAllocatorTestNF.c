@@ -1,3 +1,9 @@
+/* This test program for next-fit allocator allocates three regions, 
+ * deallocates the middle region by changing prefix->allocate to 0, 
+ * sets the last allocated prefix to the middle region, and then 
+ * allocates another region in the newly allocated region.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdio.h>
