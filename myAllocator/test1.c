@@ -36,6 +36,21 @@ int main()
   arenaCheck();
   free(p1);
   arenaCheck();
+  
+  /* Allocate three regions again to test resizeRegion() */
+  p1 = firstFitAllocRegion(200);
+  p2 = firstFitAllocRegion(500);
+  p3 = firstFitAllocRegion(400);
+  arenaCheck();
+  freeRegion(p2); /* free the block in the middle */
+  arenaCheck();
+  p1 = resizeRegion(p1, 600); /* resize the first allocated block */
+  arenaCheck();
+
+  freeRegion(p1);
+  freeRegion(p3);
+  arenaCheck();
+  
   {				/* measure time for 10000 mallocs */
     struct timeval t1, t2;
     int i;

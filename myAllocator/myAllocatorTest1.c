@@ -38,7 +38,7 @@ int main() {
   /* Allocate three regions again to test resizeRegion() */
   p1 = firstFitAllocRegion(200);
   p2 = firstFitAllocRegion(500);
-  p3 = firstFitAllocRegion(200);
+  p3 = firstFitAllocRegion(400);
   arenaCheck();
   freeRegion(p2); /* free the block in the middle */
   arenaCheck();
