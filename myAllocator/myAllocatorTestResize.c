@@ -21,21 +21,8 @@ void getutime(struct timeval *t) {
 int main() {
   void *p1, *p2, *p3;
   arenaCheck();
-  p1 = firstFitAllocRegion(254);
-  arenaCheck();
-  p2 = firstFitAllocRegion(25400);
-  arenaCheck();
-  p3 = firstFitAllocRegion(254);
-  printf("%p %p %p\n", p1, p2, p3);
-  arenaCheck();
-  freeRegion(p2);
-  arenaCheck();
-  freeRegion(p3);
-  arenaCheck();
-  freeRegion(p1);
-  arenaCheck();
 
-  /* Allocate three regions again to test resizeRegion() */
+  /* Allocate three regions to test resizeRegion() */
   p1 = firstFitAllocRegion(200);
   p2 = firstFitAllocRegion(500);
   p3 = firstFitAllocRegion(400);

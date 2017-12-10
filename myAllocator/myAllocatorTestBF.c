@@ -45,7 +45,7 @@ int main() {
   freeRegion(p3);
   freeRegion(p4);
   freeRegion(p5);
-  arenaCheck();
+ 
   { /* measure time for 10000 mallocs */
     struct timeval t1, t2;
     int i;

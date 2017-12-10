@@ -212,16 +212,16 @@ BlockPrefix_t *findNextFit(size_t s) {	/* find next block with usable space > s 
 
 BlockPrefix_t *findBestFit(size_t s) {	/* find best block with usable space > s */
     BlockPrefix_t *p = arenaBegin;
-    BlockPrefix_t *best = 0;
+    BlockPrefix_t *best = NULL;
 
     while (p) {
 	if (!p->allocated && computeUsableSpace(p) >= s)
-	    if (best==0 || computeUsableSpace(p) < computeUsableSpace(best)) /* compare current best with new unallocated block */
+	    if (best==NULL || computeUsableSpace(p) < computeUsableSpace(best)) /* compare current best with new unallocated block */
             best = p; 
 	p = getNextPrefix(p);
     }
     
-    if (best != 0) return best; /* return the current best if current best is not the initialized value */
+    if (best != NULL) return best; /* return the current best if current best is not the initialized value */
     else return growArena(s);
 }
 
