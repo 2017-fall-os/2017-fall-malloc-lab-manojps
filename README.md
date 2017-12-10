@@ -1,29 +1,31 @@
-# os-malloc
-This directory contains:
+I have implemented the resizeRegion() function and next-fit and best-fit allocators by extending the source code provided by Dr. Freudenthal. My allocators and test cases can be accessed in the `myAllocator` directory.
 
-myAllocator.c: a first-fit allocator
-myAllocator.h: its header file
-
-myAllocatorTest1.c: a test program for my allocator 
-
-malloc.c: a replacement for malloc that uses my allocator
-test1.c: a test program that uses this replacement malloc
-
-There are two different testers as some implementations of printf
-call malloc to allocate buffer space. This causes test1 to behave
-improperly as it uses myAllocator as a malloc replacement. In this
-case myAllocatorTest1 will function correctly. The only difference
-between the programs is that test1 uses myAllocator as a malloc
-replacement and myAllocatorTest1 uses myAllocator directly.
-
-Makefile: a fairly portable "makefile", targets "all" and "clean"
+The improved resizeRegion() function and next-fit and best-fit allocators are defined inside `myAllocator.c` file. I have also modified `myAllocator.h` header file to implement next-fit allocator and to implement the test cases for resizeRegion() funtion, next-fit allocator and best-fit allocator. 
 
 To compile: 
- $ make 
+```
+$ make
+````
 To clean:
- $ make clean
-
-The cygwin runtime uses malloc() and brk() extensively.  It is
-interesting to compare the output of test1 & myAllocatorTest1.  All
-those extra allocated regions are being used by cygwin's libraries!
-
+```
+$ make clean
+```
+ 
+The test programs for resizeRegion() allocates three regions first, then free the region in the middle using freeRegion() and resize the first region with the deallocated region next to it.
+To run the test cases for resizeRegion use :
+``` 
+ $ ./myAllocatorTestResize
+ $ ./testResize
+```
+The test programs for next-fit allocator allocates three regions, deallocates the middle region by changing prefix->allocate to 0, sets the last allocated prefix to the middle region, and then allocates another region in the newly allocated region.
+To run the test cases for next-fit allocator use :
+```
+ $ ./myAllocatorTestNF
+ $ ./testNF 
+```
+The test programs for best-fit allocator allocates seven regions, then deallocates three "even numbered" regions, then requests to allocate memory such that the best-fit would be the second even numbered region.
+To run the test cases for best-fit allocator use :
+```
+ $ ./myAllocatorTestBF
+ $ ./testBF 
+```
