@@ -3,9 +3,13 @@ I have implemented the resizeRegion() function and next-fit and best-fit allocat
 The improved resizeRegion() function and next-fit and best-fit allocators are defined inside `myAllocator.c` file. I have also modified `myAllocator.h` header file to implement next-fit allocator and to implement the test cases for resizeRegion() funtion, next-fit allocator and best-fit allocator. 
 
 To compile: 
-```$ make ```
+```
+$ make
+````
 To clean:
-```$ make clean```
+```
+$ make clean
+```
  
 The test programs for resizeRegion() allocates three regions first, then free the region in the middle using freeRegion() and resize the first region with the deallocated region next to it.
 To run the test cases for resizeRegion use :
