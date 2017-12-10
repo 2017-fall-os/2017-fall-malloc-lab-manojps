@@ -16,6 +16,7 @@ BlockPrefix_t *lastAllocated; /* prefix for last allocated block */
 void arenaCheck(void);
 void *firstFitAllocRegion(size_t s);
 void *nextFitAllocRegion(size_t s);
+void *bestFitAllocRegion(size_t s);
 void freeRegion(void *r);
 void *resizeRegion(void *r, size_t newSize);
 size_t computeUsableSpace(BlockPrefix_t *p);

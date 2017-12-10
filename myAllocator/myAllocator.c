@@ -201,14 +201,28 @@ BlockPrefix_t *findFirstFit(size_t s) {	/* find first block with usable space > 
 
 BlockPrefix_t *findNextFit(size_t s) {	/* find next block with usable space > s */
     BlockPrefix_t *n = lastAllocated;
-    //BlockPrefix_t *p = lastAllocated;
-    //BlockPrefix_t *n = getNextPrefix(p); /* find prefix for the next block from the last allocated block's prefix. This,ll save one iteration in the following while loop. */
     while (n) {
 	if (!n->allocated && computeUsableSpace(n) >= s)
 	    return n;
 	n = getNextPrefix(n);
     }
     return growArena(s);
+}
+
+
+BlockPrefix_t *findBestFit(size_t s) {	/* find best block with usable space > s */
+    BlockPrefix_t *p = arenaBegin;
+    BlockPrefix_t *best = 0;
+
+    while (p) {
+	if (!p->allocated && computeUsableSpace(p) >= s)
+	    if (best==0 || computeUsableSpace(p) < computeUsableSpace(best)) /* compare current best with new unallocated block */
+            best = p; 
+	p = getNextPrefix(p);
+    }
+    
+    if (best != 0) return best; /* return the current best if current best is not the initialized value */
+    else return growArena(s);
 }
 
 /* conversion between blocks & regions (offset of prefixSize */
@@ -253,12 +267,36 @@ void *firstFitAllocRegion(size_t s) {
 
 }
 
+/* next-fit allocator */
 void *nextFitAllocRegion(size_t s) {
   size_t asize = align8(s);
   BlockPrefix_t *p;
   if (arenaBegin == 0)		/* arena uninitialized? */
     initializeArena();
   p = findNextFit(s);		/* find a block */
+  if (p) {			/* found a block */
+    size_t availSize = computeUsableSpace(p);
+    if (availSize >= (asize + prefixSize + suffixSize + 8)) { /* split block? */
+      void *freeSliverStart = (void *)p + prefixSize + suffixSize + asize;
+      void *freeSliverEnd = computeNextPrefixAddr(p);
+      makeFreeBlock(freeSliverStart, freeSliverEnd - freeSliverStart);
+      makeFreeBlock(p, freeSliverStart - (void *)p); /* piece being allocated */
+    }
+    p->allocated = 1;		/* mark as allocated */
+    return prefixToRegion(p);	/* convert to *region */
+  } else {			/* failed */
+    return (void *)0;
+  }
+
+}
+
+/* best-fit allocator */
+void *bestFitAllocRegion(size_t s) {
+  size_t asize = align8(s);
+  BlockPrefix_t *p;
+  if (arenaBegin == 0)		/* arena uninitialized? */
+    initializeArena();
+  p = findBestFit(s);		/* find a block */
   if (p) {			/* found a block */
     size_t availSize = computeUsableSpace(p);
     if (availSize >= (asize + prefixSize + suffixSize + 8)) { /* split block? */
